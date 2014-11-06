@@ -18,15 +18,15 @@
    <body>
       <?php
          // build SELECT query
-         $query = "SELECT * FROM contacts";
+         $query = "SELECT * FROM student";
 
          // Connect to MySQL
-         if ( !( $database = mysql_connect( "guo435db.coscy9cmelyy.us-east-1.rds.amazonaws.com:3306",
-                  "root", "guo435db" ) ) )
+         if ( !( $database = mysql_connect( "localhost:3306",
+                  "root") ) )
             die( "<p>Could not connect to database</p></body></html>" );
 
          // open MailingList database
-         if ( !mysql_select_db( "mailingList", $database ) )
+         if ( !mysql_select_db( "CIS435P3", $database ) )
             die( "<p>Could not open MailingList database</p>
                </body></html>" );
 
@@ -43,12 +43,12 @@
          <caption>Contacts stored in the database</caption>
          <tr>
             <th>ID</th>
-            <th>Last Name</th>
+            <th>Timeslot ID</th>
             <th>First Name</th>
+            <th>Last Name</th>
+            <th>UMID</th>
             <th>E-mail Address</th>
             <th>Phone Number</th>
-            <th>Book</th>
-            <th>Operating System</th>
          </tr>
          <?php
             // fetch each record in result set
