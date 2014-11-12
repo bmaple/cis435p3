@@ -3,182 +3,204 @@
 <!-- Fig. 19.21: dynamicForm.php -->
 <!-- Dynamic form. -->
 <html>
-   <head>
-      <meta charset = "utf-8">
-      <title>Registration Form</title>
-      <style type = "text/css">
-         p       { margin: 0px; }
-         .error  { color: red }
-         p.head  { font-weight: bold; margin-top: 10px; }
-         label   { width: 5em; float: left; }
-      </style>
-   </head>
-   <body>
-      <?php
-         // variables used in script
-         $fname = isset($_POST[ "fname" ]) ? $_POST[ "fname" ] : "";
-         $lname = isset($_POST[ "lname" ]) ? $_POST[ "lname" ] : "";
-         $email = isset($_POST[ "email" ]) ? $_POST[ "email" ] : "";
-         $phone = isset($_POST[ "phone" ]) ? $_POST[ "phone" ] : "";
-         $book = isset($_POST[ "book" ]) ? $_POST[ "book" ] : "";
-         $os = isset($_POST[ "os" ]) ? $_POST[ "os" ] : "";
-         $iserror = false;
-         $formerrors =
-            array( "fnameerror" => false, "lnameerror" => false,
-               "emailerror" => false, "phoneerror" => false );
+<head>
+<meta charset = "utf-8">
+<title>Registration Form</title>
+<style type = "text/css">
+p       { margin: 0px; }
+.error  { color: red }
+p.head  { font-weight: bold; margin-top: 10px; }
+label   { width: 5em; float: left; }
+</style>
+</head>
+<body>
+<?php
+function querydb($query, $db, $location, $username, $iserror) {
+    if ( !$iserror ) {
+        if ( !( $database = mysql_connect( $location, $username ) ) )
+            die( "<p>Could not connect to database</p>" );
 
-         // array of book titles
-         $booklist = array( "Internet and WWW How to Program",
-            "C++ How to Program", "Java How to Program",
-            "Visual Basic How to Program" );
+        // open database
+        if ( !mysql_select_db( $db, $database ) )
+            die( "<p>Could not open database</p>" );
 
-         // array of possible operating systems
-         $systemlist = array( "Windows", "Mac OS X", "Linux", "Other" );
+        // execute query in database
+        if ( !( $result = mysql_query( $query, $database ) ) ) {
+            print( "<p>Could not execute query!</p>" );
+            die( mysql_error() );
+        } // end if
+        mysql_close( $database );
+        return $result;
+    }
+    else
+        return false;
+}
+// variables used in script
+$fname = isset($_POST[ "fname" ]) ? $_POST[ "fname" ] : "";
+$lname = isset($_POST[ "lname" ]) ? $_POST[ "lname" ] : "";
+$email = isset($_POST[ "email" ]) ? $_POST[ "email" ] : "";
+$phone = isset($_POST[ "phone" ]) ? $_POST[ "phone" ] : "";
+$umid = isset($_POST[ "umid" ]) ? $_POST[ "umid" ] : "";
+$dbname = "CIS435P3";
+$dbloc ="localhost:3306";
+$dbuser ="root";
+$times_query = "SELECT * FROM timeslot";
+$iserror = false;
+$formerrors = array( "fnameerror" => false, "lnameerror" => false, "emailerror" => false, "phoneerror" => false );
 
-         // array of name values for the text input fields
-         $inputlist = array( "fname" => "First Name",
-            "lname" => "Last Name", "email" => "Email",
-            "phone" => "Phone" );
 
-         // ensure that all fields have been filled in correctly
-         if ( isset( $_POST["submit"] ) )
-         {
-            if ( $fname == "" )
-            {
-               $formerrors[ "fnameerror" ] = true;
-               $iserror = true;
-            } // end if
+// array of time slots 
+$times = querydb($times_query,$dbname, $dbloc, $dbuser, $iserror);//need to find an error statement if wrong
+/*
+while($row = mysql_fetch_assoc($times)){
+    foreach($row as $key => $value)
+        echo "{$key} ";
+    echo '<br />';
+}
+ */
 
-            if ( $lname == "" )
-            {
-               $formerrors[ "lnameerror" ] = true;
-               $iserror = true;
-            } // end if
+// array of possible operating systems
 
-            if ( $email == "" )
-            {
-               $formerrors[ "emailerror" ] = true;
-               $iserror = true;
-            } // end if
+// array of name values for the text input fields
+$inputlist = array( 
+    "fname" => "First Name",
+    "lname" => "Last Name", 
+    "email" => "Email",
+    "umid" => "UMID",
+    "phone" => "Phone" );
 
-            if ( !preg_match( "/^\([0-9]{3}\)[0-9]{3}-[0-9]{4}$/",
-               $phone ) )
-            {
-               $formerrors[ "phoneerror" ] = true;
-               $iserror = true;
-            } // end if
+// ensure that all fields have been filled in correctly
+if ( isset( $_POST["submit"] ) )
+{
+    if ( $fname == "" )
+    {
+        $formerrors[ "fnameerror" ] = true;
+        $iserror = true;
+    } // end if
 
-            if ( !$iserror )
-            {
+    if ( $lname == "" )
+    {
+        $formerrors[ "lnameerror" ] = true;
+        $iserror = true;
+    } // end if
 
-               // Connect to MySQL
-               if ( !( $database = mysql_connect( "localhost:3306",
-                  "root", "fatal1ty" ) ) )
-                  die( "<p>Could not connect to database</p>" );
+    if ( $email == "" )
+    {
+        $formerrors[ "emailerror" ] = true;
+        $iserror = true;
+    } // end if
+   if ( $umid == "" )
+    {
+        $formerrors[ "emailerror" ] = true;
+        $iserror = true;
+    } // end if
+   
+   if ( !preg_match( "/^\([0-9]{3}\)[0-9]{3}-[0-9]{4}$/",
+        $phone ) )
+    {
+        $formerrors[ "phoneerror" ] = true;
+        $iserror = true;
+    } // end if
+        // build INSERT query
+        $query = "INSERT INTO contacts " .
+            "( LastName, FirstName, Email, Phone, Book, OS ) " .
+            "VALUES ( '$lname', '$fname', '$email', " .
+            "'" . mysql_real_escape_string( $phone ) .
+            "', '$book', '$os' )";
 
-               // open MailingList database
-               if ( !mysql_select_db( "CIS435P3", $database ) )
-                  die( "<p>Could not open MailingList database</p>" );
 
-               // build INSERT query
-               $query = "INSERT INTO contacts " .
-                  "( LastName, FirstName, Email, Phone, Book, OS ) " .
-                  "VALUES ( '$lname', '$fname', '$email', " .
-                  "'" . mysql_real_escape_string( $phone ) .
-                  "', '$book', '$os' )";
+    $times = querydb($insert_query, $dbname, $dbloc, $dbuser, $iserror);//need to find an error statement if wrong
+    if ( !$iserror )
+    {
 
-               // execute query in MailingList database
-               if ( !( $result = mysql_query( $query, $database ) ) )
-               {
-                  print( "<p>Could not execute query!</p>" );
-                  die( mysql_error() );
-               } // end if
+        // Connect to MySQL
+        if ( !( $database = mysql_connect( "localhost:3306",
+            "root", "fatal1ty" ) ) )
+            die( "<p>Could not connect to database</p>" );
 
-               mysql_close( $database );
+        // open MailingList database
+        if ( !mysql_select_db( "CIS435P3", $database ) )
+            die( "<p>Could not open MailingList database</p>" );
 
-               print( "<p>Hi $fname. Thank you for completing the survey.
-                     You have been added to the $book mailing list.</p>
-                  <p class = 'head'>The following information has been
-                     saved in our database:</p>
-                  <p>Name: $fname $lname</p>
-                  <p>Email: $email</p>
-                  <p>Phone: $phone</p>
-                  <p>OS: $os</p>
-                  <p><a href = 'formDatabase.php'>Click here to view
-                     entire database.</a></p>
-                  <p class = 'head'>This is only a sample form.
-                     You have not been added to a mailing list.</p>
-                  </body></html>" );
-               die(); // finish the page
-            } // end if
-         } // end if
+        // build INSERT query
+        $query = "INSERT INTO contacts " .
+            "( LastName, FirstName, Email, Phone, Book, OS ) " .
+            "VALUES ( '$lname', '$fname', '$email', " .
+            "'" . mysql_real_escape_string( $phone ) .
+            "', '$book', '$os' )";
 
-         print( "<h1>Sample Registration Form</h1>
-            <p>Please fill in all fields and click Register.</p>" );
+        // execute query in MailingList database
+        if ( !( $result = mysql_query( $query, $database ) ) )
+        {
+            print( "<p>Could not execute query!</p>" );
+            die( mysql_error() );
+        } // end if
 
-         if ( $iserror )
-         {
-            print( "<p class = 'error'>Fields with * need to be filled
-               in properly.</p>" );
-         } // end if
+        mysql_close( $database );
 
-         print( "<!-- post form data to dynamicForm.php -->
-            <form method = 'post' action = 'index.php'>
-            <h2>User Information</h2>
+        print( "<p>Hi $fname. Thank you for completing the survey.
+            You have been added to the $book mailing list.</p>
+            <p class = 'head'>The following information has been
+            saved in our database:</p>
+            <p>Name: $fname $lname</p>
+            <p>Email: $email</p>
+            <p>Phone: $phone</p>
+            <p>OS: $os</p>
+            <p><a href = 'formDatabase.php'>Click here to view
+            entire database.</a></p>
+            <p class = 'head'>This is only a sample form.
+            You have not been added to a mailing list.</p>
+            </body></html>" );
+        die(); // finish the page
+    } // end if
+} // end if
 
-            <!-- create four text boxes for user input -->" );
-         foreach ( $inputlist as $inputname => $inputalt )
-         {
-            print( "<div><label>$inputalt:</label><input type = 'text'
-               name = '$inputname' value = '" . $$inputname . "'>" );
+print( "<h1>Sample Registration Form</h1>
+    <p>Please fill in all fields and click Register.</p>" );
 
-            if ( $formerrors[ ( $inputname )."error" ] == true )
-               print( "<span class = 'error'>*</span>" );
+if ( $iserror )
+{
+    print( "<p class = 'error'>Fields with * need to be filled
+        in properly.</p>" );
+} // end if
 
-            print( "</div>" );
-         } // end foreach
+print( "<!-- post form data to dynamicForm.php -->
+    <form method = 'post' action = 'index.php'>
+    <h2>User Information</h2>
 
-         if ( $formerrors[ "phoneerror" ] )
-            print( "<p class = 'error'>Must be in the form
-               (555)555-5555" );
+    <!-- create four text boxes for user input -->" );
+foreach ( $inputlist as $inputname => $inputalt )
+{
+    print( "<div><label>$inputalt:</label><input type = 'text'
+        name = '$inputname' value = '" . $$inputname . "'>" );
 
-         print( "<h2>Publications</h2>
-            <p>Which book would you like information about?</p>
+    if ( $formerrors[ ( $inputname )."error" ] == true )
+        print( "<span class = 'error'>*</span>" );
 
-            <!-- create drop-down list containing book names -->
-            <select name = 'book'>" );
+    print( "</div>" );
+} // end foreach
 
-         foreach ( $booklist as $currbook )
-         {
-            print( "<option" .
-               ($currbook == $book ? " selected>" : ">") .
-               $currbook . "</option>" );
-         } // end foreach
+if ( $formerrors[ "phoneerror" ] )
+    print( "<p class = 'error'>Must be in the form
+    (555)555-5555" );
 
-         print( "</select>
-            <h2>Operating System</h2>
-            <p>Which operating system do you use?</p>
+print( "<h2>times</h2>
+    <select name = 'times'>" );
+while($row = mysql_fetch_assoc($times)){
+    echo '<option>';
+    echo $row['timeStart'];
+    echo ' - ';
+    echo $row['timeEnd'];
+    echo '</option>';
+}
 
-            <!-- create five radio buttons -->" );
+print "</select>";
 
-         $counter = 0;
-
-         foreach ( $systemlist as $currsystem )
-         {
-            print( "<input type = 'radio' name = 'os'
-               value = '$currsystem' " );
-
-            if ( ( !$os && $counter == 0 ) || ( $currsystem == $os ) )
-               print( "checked" );
-
-            print( ">$currsystem" );
-            ++$counter;
-         } // end foreach
-
-         print( "<!-- create a submit button -->
-            <p class = 'head'><input type = 'submit' name = 'submit'
-            value = 'Register'></p></form></body></html>" );
-   ?><!-- end PHP script -->
+print( "<!-- create a submit button -->
+    <p class = 'head'><input type = 'submit' name = 'submit'
+    value = 'Register'></p></form></body></html>" );
+?>
+<!-- end PHP script -->
 
 <!--
 **************************************************************************
