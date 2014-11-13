@@ -30,6 +30,6 @@ insert into timeslot (demoDate, timeStart, timeEnd, maxSlots) Values('12/5/14', 
 
 
 insert into student (timeslot_id, fname, lname, umid, email, phone) 
-Values('0', 'ben', 'maple', '11111111', 'lol@no.com', '555-555-5555');
+Values('1', 'ben', 'maple', '11111111', 'lol@no.com', '555-555-5555');
 
 

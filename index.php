@@ -46,7 +46,7 @@ $dbloc ="localhost:3306";
 $dbuser ="root";
 $times_query = "SELECT * FROM timeslot";
 $iserror = false;
-$formerrors = array( "fnameerror" => false, "lnameerror" => false, "emailerror" => false, "phoneerror" => false );
+$formerrors = array( "fnameerror" => false, "lnameerror" => false, "emailerror" => false, "phoneerror" => false, "umiderror" => false );
 
 
 // array of time slots 
@@ -89,70 +89,42 @@ if ( isset( $_POST["submit"] ) )
         $formerrors[ "emailerror" ] = true;
         $iserror = true;
     } // end if
-   if ( $umid == "" )
+    if ( $umid == "" )
     {
-        $formerrors[ "emailerror" ] = true;
+        $formerrors[ "umiderror" ] = true;
         $iserror = true;
     } // end if
-   
-   if ( !preg_match( "/^\([0-9]{3}\)[0-9]{3}-[0-9]{4}$/",
+
+    if ( !preg_match( "/^\([0-9]{3}\)[0-9]{3}-[0-9]{4}$/",
         $phone ) )
     {
         $formerrors[ "phoneerror" ] = true;
         $iserror = true;
     } // end if
-        // build INSERT query
-        $query = "INSERT INTO contacts " .
-            "( LastName, FirstName, Email, Phone, Book, OS ) " .
-            "VALUES ( '$lname', '$fname', '$email', " .
-            "'" . mysql_real_escape_string( $phone ) .
-            "', '$book', '$os' )";
+    // build INSERT query
+    $insert_query = "INSERT INTO student" .
+        "( lname, fname, email, phone, umid, timeslot_id) " .
+        "VALUES ( '$lname', '$fname', '$email', " .
+        "'" . mysql_real_escape_string( $phone ) .
+        "', '$umid', '2' )";
 
 
-    $times = querydb($insert_query, $dbname, $dbloc, $dbuser, $iserror);//need to find an error statement if wrong
-    if ( !$iserror )
-    {
+    $result = querydb($insert_query, $dbname, $dbloc, $dbuser, $iserror);//need to find an error statement if wrong
 
-        // Connect to MySQL
-        if ( !( $database = mysql_connect( "localhost:3306",
-            "root", "fatal1ty" ) ) )
-            die( "<p>Could not connect to database</p>" );
-
-        // open MailingList database
-        if ( !mysql_select_db( "CIS435P3", $database ) )
-            die( "<p>Could not open MailingList database</p>" );
-
-        // build INSERT query
-        $query = "INSERT INTO contacts " .
-            "( LastName, FirstName, Email, Phone, Book, OS ) " .
-            "VALUES ( '$lname', '$fname', '$email', " .
-            "'" . mysql_real_escape_string( $phone ) .
-            "', '$book', '$os' )";
-
-        // execute query in MailingList database
-        if ( !( $result = mysql_query( $query, $database ) ) )
-        {
-            print( "<p>Could not execute query!</p>" );
-            die( mysql_error() );
-        } // end if
-
-        mysql_close( $database );
-
-        print( "<p>Hi $fname. Thank you for completing the survey.
-            You have been added to the $book mailing list.</p>
-            <p class = 'head'>The following information has been
-            saved in our database:</p>
-            <p>Name: $fname $lname</p>
-            <p>Email: $email</p>
-            <p>Phone: $phone</p>
-            <p>OS: $os</p>
-            <p><a href = 'formDatabase.php'>Click here to view
-            entire database.</a></p>
-            <p class = 'head'>This is only a sample form.
-            You have not been added to a mailing list.</p>
-            </body></html>" );
-        die(); // finish the page
-    } // end if
+    print( "<p>Hi $fname. Thank you for completing the survey.
+        You have been added to the timeslot book mailing list.</p>
+        <p class = 'head'>The following information has been
+        saved in our database:</p>
+        <p>Name: $fname $lname</p>
+        <p>Email: $email</p>
+        <p>Phone: $phone</p>
+        <p>UMID: $umid</p>
+        <p><a href = 'formDatabase.php'>Click here to view
+        entire database.</a></p>
+        <p class = 'head'>This is only a sample form.
+        You have not been added to a mailing list.</p>
+        </body></html>" );
+    die(); // finish the page
 } // end if
 
 print( "<h1>Sample Registration Form</h1>
