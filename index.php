@@ -36,6 +36,7 @@ function querydb($query, $db, $location, $username, $iserror) {
         return false;
 }
 // variables used in script
+$timesOption = isset($_POST[ "timesOption" ]) ? $_POST[ "timesOption" ] : "";
 $fname = isset($_POST[ "fname" ]) ? $_POST[ "fname" ] : "";
 $lname = isset($_POST[ "lname" ]) ? $_POST[ "lname" ] : "";
 $email = isset($_POST[ "email" ]) ? $_POST[ "email" ] : "";
@@ -106,7 +107,7 @@ if ( isset( $_POST["submit"] ) )
         "( lname, fname, email, phone, umid, timeslot_id) " .
         "VALUES ( '$lname', '$fname', '$email', " .
         "'" . mysql_real_escape_string( $phone ) .
-        "', '$umid', '2' )";
+        "', '$umid', '$timesOption' )";
 
 
     $result = querydb($insert_query, $dbname, $dbloc, $dbuser, $iserror);//need to find an error statement if wrong
@@ -149,7 +150,7 @@ foreach ( $inputlist as $inputname => $inputalt )
     if ( $formerrors[ ( $inputname )."error" ] == true )
         print( "<span class = 'error'>*</span>" );
 
-    print( "</div>" );
+    print( "</div><br />" );
 } // end foreach
 
 if ( $formerrors[ "phoneerror" ] )
@@ -157,17 +158,16 @@ if ( $formerrors[ "phoneerror" ] )
     (555)555-5555" );
 
 print( "<h2>times</h2>
-    <select name = 'times'>" );
+    <select name='timesOption'>" );
 while($row = mysql_fetch_assoc($times)){
-    echo '<option>';
+    echo "<option value = {$row['id']}>";
     echo $row['timeStart'];
     echo ' - ';
     echo $row['timeEnd'];
     echo '</option>';
 }
-
 print "</select>";
-
+echo($timesOption);
 print( "<!-- create a submit button -->
     <p class = 'head'><input type = 'submit' name = 'submit'
     value = 'Register'></p></form></body></html>" );
