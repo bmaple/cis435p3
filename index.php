@@ -51,7 +51,7 @@ $numReg_query = "select timeslot.id, count(*), timeslot.maxSlots".
     " join student on timeslot.id = student.timeslot_id".
     " group by student.timeslot_id";
 $iserror = false;
-$formerrors = array( "fnameerror" => false, "lnameerror" => false, "emailerror" => false, "phoneerror" => false, "umiderror" => false, "timeserror" => false, );
+$formerrors = array( "fnameerror" => false, "lnameerror" => false, "emailerror" => false, "phoneerror" => false, "umiderror" => false, "timesOptionerror" => false, );
 
 
 
@@ -72,23 +72,10 @@ $inputlist = array(
  
 $numReg = querydb($numReg_query, $dbname, $dbloc, $dbuser, $iserror);
 $test = 0;
-/*
-while($row = mysql_fetch_row($numReg)){
-        foreach ( $row as $key => $value){
-            echo $key;
-            echo " ";
-            echo $value;
-        }
-        echo '<br />';
-    }
- */
-
-
 
 // ensure that all fields have been filled in correctly
 if ( isset( $_POST["submit"] ) )
 {
-   $timeRow; 
     while($row = mysql_fetch_row($numReg)){
         if ($row[0] == $timesOption)
            $timeRow = $row; 
@@ -98,31 +85,31 @@ if ( isset( $_POST["submit"] ) )
     {
         $formerrors[ "fnameerror" ] = true;
         $iserror = true;
-    } // end if
+    } 
     if ( !preg_match("/^\w+$/", $lname))
     {
         $formerrors[ "lnameerror" ] = true;
         $iserror = true;
-    } // end if
+    } 
     if ( !preg_match("/^\w+\@(\w{1,19}\.){1,3}\w{1,20}$/", $email))
     {
         $formerrors[ "emailerror" ] = true;
         $iserror = true;
-    } // end if
+    } 
     if ( !preg_match( "/^[0-9]{4}-[0-9]{4}$/", $umid) )
     {
         $formerrors[ "umiderror" ] = true;
         $iserror = true;
-    } // end if
+    } 
     if ( !preg_match( "/^\([0-9]{3}\)[0-9]{3}-[0-9]{4}$/",
         $phone ) )
     {
         $formerrors[ "phoneerror" ] = true;
         $iserror = true;
-    } // end if
+    } 
     if( $timeRow[1] > $timeRow[2])
     {
-        $formerrors[ "timeerror" ] = true;
+        $formerrors[ "timesOptionerror" ] = true;
         $iserror = true;
     }
     
@@ -149,10 +136,6 @@ if ( isset( $_POST["submit"] ) )
         You have not been added to a mailing list.</p>
         </body></html>" );
         die(); // finish the page
-    }
-    else
-    {
-
     }
 } // end if
 
@@ -191,6 +174,8 @@ while($row = mysql_fetch_assoc($times)){
     echo '</option>';
 }
 print "</select>";
+if ( $formerrors[ "timesOptionerror" ] == true )
+    print( "<span class = 'error'>*</span>" );
 print( "<p class = 'head'>
     <input type = 'submit' name = 'submit' value = 'Register'>
     </p>
