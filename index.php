@@ -94,29 +94,26 @@ if ( isset( $_POST["submit"] ) )
            $timeRow = $row; 
     }
 
-    if ( $fname == "" )
+    if ( !preg_match("/^\w+$/", $fname))
     {
         $formerrors[ "fnameerror" ] = true;
         $iserror = true;
     } // end if
-
-    if ( $lname == "" )
+    if ( !preg_match("/^\w+$/", $lname))
     {
         $formerrors[ "lnameerror" ] = true;
         $iserror = true;
     } // end if
-
-    if ( $email == "" )
+    if ( !preg_match("/^\w+\@(\w{1,19}\.){1,3}\w{1,20}$/", $email))
     {
         $formerrors[ "emailerror" ] = true;
         $iserror = true;
     } // end if
-    if ( $umid == "" )
+    if ( !preg_match( "/^[0-9]{4}-[0-9]{4}$/", $umid) )
     {
         $formerrors[ "umiderror" ] = true;
         $iserror = true;
     } // end if
-
     if ( !preg_match( "/^\([0-9]{3}\)[0-9]{3}-[0-9]{4}$/",
         $phone ) )
     {
