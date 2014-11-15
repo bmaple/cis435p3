@@ -51,7 +51,7 @@ $numReg_query = "select timeslot.id, count(*), timeslot.maxSlots".
     " join student on timeslot.id = student.timeslot_id".
     " group by student.timeslot_id";
 $iserror = false;
-$formerrors = array( "fnameerror" => false, "lnameerror" => false, "emailerror" => false, "phoneerror" => false, "umiderror" => false, "timeerror" => false, );
+$formerrors = array( "fnameerror" => false, "lnameerror" => false, "emailerror" => false, "phoneerror" => false, "umiderror" => false, "timeserror" => false, );
 
 
 
@@ -65,8 +65,8 @@ $inputlist = array(
     "lname" => "Last Name", 
     "email" => "Email",
     "umid" => "UMID",
-    "phone" => "Phone" 
-    );
+    "phone" => "Phone",
+);
 
    
  
@@ -125,12 +125,10 @@ if ( isset( $_POST["submit"] ) )
     } // end if
     if( $timeRow[1] > $timeRow[2])
     {
-        echo "TIME ERROR";
         $formerrors[ "timeerror" ] = true;
         $iserror = true;
     }
     
-
     // build INSERT query
     $insert_query = "INSERT INTO student" .
         "( lname, fname, email, phone, umid, timeslot_id) " .
@@ -138,11 +136,8 @@ if ( isset( $_POST["submit"] ) )
         "'" . mysql_real_escape_string( $phone ) .
         "', '$umid', '$timesOption' )";
 
-    //if no error send
-    //send insert query
-    if (!$iserror)
+    if (!$iserror) {
         $result = querydb($insert_query, $dbname, $dbloc, $dbuser, $iserror);//need to find an error statement if wrong
-
     print( "<p>Hi $fname. Thank you for completing the survey.
         You have been added to the timeslot book mailing list.</p>
         <p class = 'head'>The following information has been
@@ -156,7 +151,12 @@ if ( isset( $_POST["submit"] ) )
         <p class = 'head'>This is only a sample form.
         You have not been added to a mailing list.</p>
         </body></html>" );
-    die(); // finish the page
+        die(); // finish the page
+    }
+    else
+    {
+
+    }
 } // end if
 
 print( "<h1>Sample Registration Form</h1>
@@ -184,11 +184,6 @@ foreach ( $inputlist as $inputname => $inputalt )
     print( "</div><br />" );
 } // end foreach
 
-if ( $formerrors[ "phoneerror" ] )
-    print( "<p class = 'error'>Must be in the form (555)555-5555" );
-
-
-
 print( "<h2>times</h2>
     <select name='timesOption'>" );
 while($row = mysql_fetch_assoc($times)){
@@ -199,27 +194,11 @@ while($row = mysql_fetch_assoc($times)){
     echo '</option>';
 }
 print "</select>";
-if ( $formerrors[ "timeerror" ] )
-    print("<p class = 'error'> Can't sign up for a full class");
-print( "<!-- create a submit button -->
-    <p class = 'head'><input type = 'submit' name = 'submit'
-    value = 'Register'></p></form></body></html>" );
+print( "<p class = 'head'>
+    <input type = 'submit' name = 'submit' value = 'Register'>
+    </p>
+    </form>
+    </body>
+    </html>" );
 ?>
 <!-- end PHP script -->
-
-<!--
-**************************************************************************
-* (C) Copyright 1992-2008 by Deitel & Associates, Inc. and               *
-* Pearson Education, Inc. All Rights Reserved.                           *
-*                                                                        *
-* DISCLAIMER: The authors and publisher of this book have used their     *
-* best efforts in preparing the book. These efforts include the          *
-* development, research, and testing of the theories and programs        *
-* to determine their effectiveness. The authors and publisher make       *
-* no warranty of any kind, expressed or implied, with regard to these    *
-* programs or to the documentation contained in these books. The authors *
-* and publisher shall not be liable in any event for incidental or       *
-* consequential damages in connection with, or arising out of, the       *
-* furnishing, performance, or use of these programs.                     *
-**************************************************************************
--->
