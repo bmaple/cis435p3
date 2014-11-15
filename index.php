@@ -46,21 +46,18 @@ $dbname = "CIS435P3";
 $dbloc ="localhost:3306";
 $dbuser ="root";
 $times_query = "SELECT * FROM timeslot";
+$numReg_query = "select timeslot.id, count(*), timeslot.maxSlots".
+    " from timeslot".
+    " join student on timeslot.id = student.timeslot_id".
+    " group by student.timeslot_id";
 $iserror = false;
-$formerrors = array( "fnameerror" => false, "lnameerror" => false, "emailerror" => false, "phoneerror" => false, "umiderror" => false );
+$formerrors = array( "fnameerror" => false, "lnameerror" => false, "emailerror" => false, "phoneerror" => false, "umiderror" => false, "timeerror" => false, );
 
 
-// array of time slots 
+
+
+//query for timeslots
 $times = querydb($times_query,$dbname, $dbloc, $dbuser, $iserror);//need to find an error statement if wrong
-/*
-while($row = mysql_fetch_assoc($times)){
-    foreach($row as $key => $value)
-        echo "{$key} ";
-    echo '<br />';
-}
- */
-
-// array of possible operating systems
 
 // array of name values for the text input fields
 $inputlist = array( 
@@ -68,11 +65,35 @@ $inputlist = array(
     "lname" => "Last Name", 
     "email" => "Email",
     "umid" => "UMID",
-    "phone" => "Phone" );
+    "phone" => "Phone" 
+    );
+
+   
+ 
+$numReg = querydb($numReg_query, $dbname, $dbloc, $dbuser, $iserror);
+$test = 0;
+/*
+while($row = mysql_fetch_row($numReg)){
+        foreach ( $row as $key => $value){
+            echo $key;
+            echo " ";
+            echo $value;
+        }
+        echo '<br />';
+    }
+ */
+
+
 
 // ensure that all fields have been filled in correctly
 if ( isset( $_POST["submit"] ) )
 {
+   $timeRow; 
+    while($row = mysql_fetch_row($numReg)){
+        if ($row[0] == $timesOption)
+           $timeRow = $row; 
+    }
+
     if ( $fname == "" )
     {
         $formerrors[ "fnameerror" ] = true;
@@ -102,6 +123,14 @@ if ( isset( $_POST["submit"] ) )
         $formerrors[ "phoneerror" ] = true;
         $iserror = true;
     } // end if
+    if( $timeRow[1] > $timeRow[2])
+    {
+        echo "TIME ERROR";
+        $formerrors[ "timeerror" ] = true;
+        $iserror = true;
+    }
+    
+
     // build INSERT query
     $insert_query = "INSERT INTO student" .
         "( lname, fname, email, phone, umid, timeslot_id) " .
@@ -109,8 +138,10 @@ if ( isset( $_POST["submit"] ) )
         "'" . mysql_real_escape_string( $phone ) .
         "', '$umid', '$timesOption' )";
 
-
-    $result = querydb($insert_query, $dbname, $dbloc, $dbuser, $iserror);//need to find an error statement if wrong
+    //if no error send
+    //send insert query
+    if (!$iserror)
+        $result = querydb($insert_query, $dbname, $dbloc, $dbuser, $iserror);//need to find an error statement if wrong
 
     print( "<p>Hi $fname. Thank you for completing the survey.
         You have been added to the timeslot book mailing list.</p>
@@ -154,8 +185,9 @@ foreach ( $inputlist as $inputname => $inputalt )
 } // end foreach
 
 if ( $formerrors[ "phoneerror" ] )
-    print( "<p class = 'error'>Must be in the form
-    (555)555-5555" );
+    print( "<p class = 'error'>Must be in the form (555)555-5555" );
+
+
 
 print( "<h2>times</h2>
     <select name='timesOption'>" );
@@ -167,7 +199,8 @@ while($row = mysql_fetch_assoc($times)){
     echo '</option>';
 }
 print "</select>";
-echo($timesOption);
+if ( $formerrors[ "timeerror" ] )
+    print("<p class = 'error'> Can't sign up for a full class");
 print( "<!-- create a submit button -->
     <p class = 'head'><input type = 'submit' name = 'submit'
     value = 'Register'></p></form></body></html>" );
