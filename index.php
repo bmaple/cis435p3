@@ -45,12 +45,15 @@ $umid = isset($_POST[ "umid" ]) ? $_POST[ "umid" ] : "";
 $dbname = "CIS435P3";
 $dbloc ="localhost:3306";
 $dbuser ="root";
-$times_query = "SELECT * FROM timeslot";
+$stu_query = "select * from student";
+$times_query = "SELECT demoDate, date_format(timeStart, '%r'), date_format(timeEnd, '%r'), id FROM timeslot";
 $numReg_query = "select timeslot.id, count(*), timeslot.maxSlots".
     " from timeslot".
     " join student on timeslot.id = student.timeslot_id".
     " group by student.timeslot_id";
 $iserror = false;
+$isDup = false;
+$perfectDup = false;
 $formerrors = array( "fnameerror" => false, "lnameerror" => false, "emailerror" => false, "phoneerror" => false, "umiderror" => false, "timesOptionerror" => false, );
 
 
@@ -68,17 +71,47 @@ $inputlist = array(
     "phone" => "Phone",
 );
 
-   
- 
-$numReg = querydb($numReg_query, $dbname, $dbloc, $dbuser, $iserror);
-$test = 0;
 
+
+$numReg = querydb($numReg_query, $dbname, $dbloc, $dbuser, $iserror);
+$students = querydb($stu_query, $dbname, $dbloc, $dbuser, $iserror); 
+
+if ( isset( $_POST["update"] ) )
+{
+if (!$iserror && $isDup && !$perfectDup ){
+        $update_query = "UPDATE student".
+            " SET timeslot_id = $timesOption".
+            " WHERE id=$dupID";
+        $result = querydb($update_query, $dbname, $dbloc, $dbuser, $iserror);
+        print("<p>Thanks for changing your timeslot $fname.</p></body></html>" );
+        die();
+    }
+}
 // ensure that all fields have been filled in correctly
 if ( isset( $_POST["submit"] ) )
 {
     while($row = mysql_fetch_row($numReg)){
-        if ($row[0] == $timesOption)
-           $timeRow = $row; 
+        if ($row[0] == $timesOption){
+            if( $row[1] > $row[2])
+            {
+                $formerrors[ "timesOptionerror" ] = true;
+                $iserror = true;
+            }
+        }
+
+    }
+    while($row = mysql_fetch_assoc($students)) {
+        if( $row['umid'] == $umid && 
+            $row['fname'] == $fname && 
+            $row['lname'] == $lname && 
+            $row['email'] == $email && 
+            $row['phone'] == $phone){
+                $isDup = true;
+                if($row['timeslot_id'] == $timesOption)
+                    $perfectDup = true;
+                $dupID = $row['id'];
+                break;
+            }
     }
 
     if ( !preg_match("/^\w+$/", $fname))
@@ -107,37 +140,34 @@ if ( isset( $_POST["submit"] ) )
         $formerrors[ "phoneerror" ] = true;
         $iserror = true;
     } 
-    if( $timeRow[1] > $timeRow[2])
-    {
-        $formerrors[ "timesOptionerror" ] = true;
-        $iserror = true;
-    }
-    
+
+
     // build INSERT query
     $insert_query = "INSERT INTO student" .
         "( lname, fname, email, phone, umid, timeslot_id) " .
         "VALUES ( '$lname', '$fname', '$email', " .
         "'" . mysql_real_escape_string( $phone ) .
         "', '$umid', '$timesOption' )";
-
-    if (!$iserror) {
-        $result = querydb($insert_query, $dbname, $dbloc, $dbuser, $iserror);//need to find an error statement if wrong
-    print( "<p>Hi $fname. Thank you for completing the survey.
-        You have been added to the timeslot book mailing list.</p>
-        <p class = 'head'>The following information has been
-        saved in our database:</p>
-        <p>Name: $fname $lname</p>
-        <p>Email: $email</p>
-        <p>Phone: $phone</p>
-        <p>UMID: $umid</p>
-        <p><a href = 'formDatabase.php'>Click here to view
-        entire database.</a></p>
-        <p class = 'head'>This is only a sample form.
-        You have not been added to a mailing list.</p>
-        </body></html>" );
+    if (!$iserror && !$isDup) {
+        $result = querydb($insert_query, $dbname, $dbloc, $dbuser, $iserror);
+        print( "<p>Hi $fname. Thank you for completing the survey.
+            You have been added to the timeslot book mailing list.</p>
+            <p class = 'head'>The following information has been
+            saved in our database:</p>
+            <p>Name: $fname $lname</p>
+            <p>Email: $email</p>
+            <p>Phone: $phone</p>
+            <p>UMID: $umid</p>
+            <p><a href = 'formDatabase.php'>Click here to view
+            entire database.</a></p>
+            <p class = 'head'>This is only a sample form.
+            You have not been added to a mailing list.</p>
+            </body></html>" );
         die(); // finish the page
     }
+    
 } // end if
+
 
 print( "<h1>Sample Registration Form</h1>
     <p>Please fill in all fields and click Register.</p>" );
@@ -166,14 +196,24 @@ foreach ( $inputlist as $inputname => $inputalt )
 
 print( "<h2>times</h2>
     <select name='timesOption'>" );
-while($row = mysql_fetch_assoc($times)){
-    echo "<option value = {$row['id']}>";
-    echo $row['timeStart'];
+while($row = mysql_fetch_row($times)){
+    echo "<option value = {$row[3]}>";
+    echo $row[0];
     echo ' - ';
-    echo $row['timeEnd'];
+    echo $row[1];
+    echo ' - ';
+    echo $row[2];
     echo '</option>';
 }
 print "</select>";
+if (!$iserror && $isDup && !$perfectDup) {
+    print("<p> $fname, you have already registered before.</p>
+        <p>Any new submission will change your timeslot.</p>
+    <input type = 'submit' name = 'update' value = 'update'>");
+}
+else if($perfectDup)
+    print("<p> $fname, you have already registered for this timeslot");
+
 if ( $formerrors[ "timesOptionerror" ] == true )
     print( "<span class = 'error'>*</span>" );
 print( "<p class = 'head'>
