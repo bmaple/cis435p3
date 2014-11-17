@@ -21,12 +21,12 @@
          $query = "SELECT * FROM student";
 
          // Connect to MySQL
-         if ( !( $database = mysql_connect( "localhost:3306",
-                  "root") ) )
+         if ( !( $database = mysql_connect( "p3.ccg2fbosv7le.us-west-2.rds.amazonaws.com:3306",
+                  "bmaple", "security") ) )
             die( "<p>Could not connect to database</p></body></html>" );
 
          // open MailingList database
-         if ( !mysql_select_db( "CIS435P3", $database ) )
+         if ( !mysql_select_db( "cis435p3", $database ) )
             die( "<p>Could not open MailingList database</p>
                </body></html>" );
 
@@ -69,20 +69,3 @@
       </table>
    </body>
 </html>
-
-<!--
-**************************************************************************
-* (C) Copyright 1992-2008 by Deitel & Associates, Inc. and               *
-* Pearson Education, Inc. All Rights Reserved.                           *
-*                                                                        *
-* DISCLAIMER: The authors and publisher of this book have used their     *
-* best efforts in preparing the book. These efforts include the          *
-* development, research, and testing of the theories and programs        *
-* to determine their effectiveness. The authors and publisher make       *
-* no warranty of any kind, expressed or implied, with regard to these    *
-* programs or to the documentation contained in these books. The authors *
-* and publisher shall not be liable in any event for incidental or       *
-* consequential damages in connection with, or arising out of, the       *
-* furnishing, performance, or use of these programs.                     *
-**************************************************************************
--->
