@@ -21,14 +21,12 @@
          $query = "SELECT * FROM student";
 
          // Connect to MySQL
-         if ( !( $database = mysql_connect( "p3.ccg2fbosv7le.us-west-2.rds.amazonaws.com:3306",
-                  "bmaple", "security") ) )
-            die( "<p>Could not connect to database</p></body></html>" );
-
-         // open MailingList database
+         if ( !( $database = mysql_connect( "aaakdox7k5o2fx.ccg2fbosv7le.us-west-2.rds.amazonaws.com:3306", "bmaple", "security") ) ){
+             print( "<p>Could not connect to database</p>");
+                die( mysql_error() . "</body></html>" );
+         }
          if ( !mysql_select_db( "cis435p3", $database ) )
-            die( "<p>Could not open MailingList database</p>
-               </body></html>" );
+            die( "<p>Could not open MailingList database</p></body></html>" );
 
          // query MailingList database
          if ( !( $result = mysql_query( $query, $database ) ) )

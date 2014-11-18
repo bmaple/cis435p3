@@ -15,27 +15,21 @@ label   { width: 5em; float: left; }
 </head>
 <body>
 <?php
-function querydb($query, $db, $location, $username, $password, $iserror) {
-    if ( !$iserror ) {
-        if ( !( $database = mysql_connect( $location, $username, $password ) ) )
-            die( "<p>Could not connect to database</p>" );
-
-        // open database
-        if ( !mysql_select_db( $db, $database ) ){
-            print( "<p>Could not open database</p>");
-            die( mysql_error() );
-        }
-
-        // execute query in database
-        if ( !( $result = mysql_query( $query, $database ) ) ) {
-            print( "<p>Could not execute query!</p>" );
-            die( mysql_error() );
-        } // end if
-        mysql_close( $database );
-        return $result;
+function querydb($query, $db, $location, $username, $password, $dbport, $iserror) {
+    if ( !( $database = mysql_connect( "aaakdox7k5o2fx.ccg2fbosv7le.us-west-2.rds.amazonaws.com:3306", "bmaple", "security") ) ){
+        print( "<p>Could not connect to database</p>");
+        die( mysql_error() . "</body></html>" );
     }
-    else
-        return false;
+
+    if ( !mysql_select_db( "cis435p3", $database ) )
+        die( "<p>Could not open MailingList database</p></body></html>" );
+
+    if ( !( $result = mysql_query( $query, $database ) ) )
+    {
+        print( "<p>Could not execute query!</p>" );
+        die( mysql_error() . "</body></html>" );
+    } // end if 
+    return $result;
 }
 //p3.ccg2fbosv7le.us-west-2.rds.amazonaws.com:3306
 //instance identifier p3
@@ -49,7 +43,8 @@ $email = isset($_POST[ "email" ]) ? $_POST[ "email" ] : "";
 $phone = isset($_POST[ "phone" ]) ? $_POST[ "phone" ] : "";
 $umid = isset($_POST[ "umid" ]) ? $_POST[ "umid" ] : "";
 $dbname = "cis435p3";
-$dbloc ="p3.ccg2fbosv7le.us-west-2.rds.amazonaws.com:3306";
+$dbloc ="aaakdox7k5o2fx.ccg2fbosv7le.us-west-2.rds.amazonaws.com";
+$dbport = "3306";
 $dbuser ="bmaple";
 $dbpass ="security";
 $stu_query = "select * from student";
@@ -71,9 +66,9 @@ $inputlist = array(
     "umid" => "UMID",
     "phone" => "Phone",
 );
-$numReg = querydb($numReg_query, $dbname, $dbloc, $dbuser, $dbpass, $iserror);
-$students = querydb($stu_query, $dbname, $dbloc, $dbuser, $dbpass, $iserror); 
-$times = querydb($times_query,$dbname, $dbloc, $dbuser, $dbpass, $iserror);
+$numReg = querydb($numReg_query, $dbname, $dbloc, $dbuser, $dbpass, $dbport, $iserror);
+$students = querydb($stu_query, $dbname, $dbloc, $dbuser, $dbpass, $dbport, $iserror); 
+$times = querydb($times_query,$dbname, $dbloc, $dbuser, $dbpass, $dbport, $iserror);
 
 // ensure that all fields have been filled in correctly
 if ( isset( $_POST["submit"] ) ) {
@@ -87,12 +82,12 @@ if ( isset( $_POST["submit"] ) ) {
     }
     while($row = mysql_fetch_assoc($students)) {
         if( $row['umid'] == $umid ){
-                $isDup = true;
-                if($row['timeslot_id'] == $timesOption)
-                    $perfectDup = true;
-                $dupID = $row['id'];
-                break;
-            }
+            $isDup = true;
+            if($row['timeslot_id'] == $timesOption)
+                $perfectDup = true;
+            $dupID = $row['id'];
+            break;
+        }
     }
     if ( !preg_match("/^\w+$/", $fname)) {
         $formerrors[ "fnameerror" ] = true;
@@ -121,7 +116,7 @@ if ( isset( $_POST["submit"] ) ) {
         "'" . mysql_real_escape_string( $phone ) .
         "', '$umid', '$timesOption' )";
     if (!$iserror && !$isDup) {
-        $result = querydb($insert_query, $dbname, $dbloc, $dbuser, $dbpass, $iserror);
+        $result = querydb($insert_query, $dbname, $dbloc, $dbuser, $dbpass, $dbport, $iserror);
         print( "<p>Hi $fname. Thank you for completing the survey.
             You have been added to the timeslot book mailing list.</p>
             <p class = 'head'>The following information has been
@@ -139,13 +134,13 @@ if ( isset( $_POST["submit"] ) ) {
     }
 } // end if
 if ( isset( $_POST["update"] ) ) {
-        $update_query = "UPDATE student".
-            " SET timeslot_id = $timesOption".
-            " WHERE id = '$dupID'";
-        $result = querydb($update_query, $dbname, $dbloc, $dbuser, $dbpass, $iserror);
-        print("<p>Thanks for changing your timeslot $fname.</p><a href = 'formDatabase.php'>Click here to view
-            entire database.</a></body></html>" );
-        die();
+    $update_query = "UPDATE student".
+        " SET timeslot_id = $timesOption".
+        " WHERE id = '$dupID'";
+    $result = querydb($update_query, $dbname, $dbloc, $dbuser, $dbpass, $dbport, $iserror);
+    print("<p>Thanks for changing your timeslot $fname.</p><a href = 'formDatabase.php'>Click here to view
+        entire database.</a></body></html>" );
+    die();
 }
 
 print( "<h1>Sign up for a project slot</h1>
