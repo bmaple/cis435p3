@@ -56,6 +56,7 @@ $numReg_query = "select timeslot.id, count(*), timeslot.maxSlots".
 $iserror = false;
 $isDup = false;
 $dupID = 0;
+
 $perfectDup = false;
 $formerrors = array( "fnameerror" => false, "lnameerror" => false, "emailerror" => false, "phoneerror" => false, "umiderror" => false, "timesOptionerror" => false, );
 // array of name values for the text input fields
@@ -85,8 +86,6 @@ if ( isset( $_POST["submit"] ) ) {
             $isDup = true;
             if($row['timeslot_id'] == $timesOption)
                 $perfectDup = true;
-            $dupID = $row['id'];
-            break;
         }
     }
     if ( !preg_match("/^\w+$/", $fname)) {
@@ -134,10 +133,15 @@ if ( isset( $_POST["submit"] ) ) {
     }
 } // end if
 if ( isset( $_POST["update"] ) ) {
+    $students = querydb($stu_query, $dbname, $dbloc, $dbuser, $dbpass, $dbport, $iserror); 
+    while($row = mysql_fetch_assoc($students)) {
+        if( $row['umid'] == $umid ){
+            $dupID = $row['id'];
+        }
+    }
     $update_query = "UPDATE student".
         " SET timeslot_id = $timesOption".
         " WHERE id = '$dupID'";
-    print("<p>UPDATE student SET timeslot_id = $timesOption WHERE id = '$dupID'</p>");
     $result = querydb($update_query, $dbname, $dbloc, $dbuser, $dbpass, $dbport, $iserror);
     print("<p>Thanks for changing your timeslot $fname.</p><a href = 'formDatabase.php'>Click here to view
         entire database.</a></body></html>" );
