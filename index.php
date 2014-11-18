@@ -137,6 +137,7 @@ if ( isset( $_POST["update"] ) ) {
     $update_query = "UPDATE student".
         " SET timeslot_id = $timesOption".
         " WHERE id = '$dupID'";
+    print("<p>UPDATE student SET timeslot_id = $timesOption WHERE id = '$dupID'</p>");
     $result = querydb($update_query, $dbname, $dbloc, $dbuser, $dbpass, $dbport, $iserror);
     print("<p>Thanks for changing your timeslot $fname.</p><a href = 'formDatabase.php'>Click here to view
         entire database.</a></body></html>" );
